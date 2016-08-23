@@ -29,10 +29,14 @@ shinyServer(
       
       popParams <- list( l = lambda( ppm ) )
       popParams$N <- matrix( data = 0, nrow = 3, ncol = input$yrProj - 1979 )
-      popParams$N[ , 1 ] <- c( 0, input$n0, input$n0 )
+      popParams$N[ , 1 ] <- c( 0, input$n0, input$n0 ) # initial population vector assumes the adult birds are evenly distributed between 2nd and 3rd age classes
+      
+      popParams$Htot <- data.frame( Year = 1980:input$yrProj, 
+                                    Harvest = 0 )
       
       for( i in 2:ncol( popParams$N ) ){
         popParams$N[ , i ] <- ppm %*% popParams$N[ , i - 1 ]
+        popParams$Htot$Harvest[ i ] <- ( ( ( ppm[ 1, 2 ] * popParams$N[ 2, i - 1 ] ) + ( ppm[ 1, 3 ] * popParams$N[ 3, i - 1 ] ) ) * bioParams$h ) / ( 1 - bioParams$h )
       }
 
       popParams$Ntot <- data.frame( Year = 1980:input$yrProj, 
@@ -43,20 +47,43 @@ shinyServer(
       }
     )
     
-    output$l <- renderText( { 
-      paste( "The predicted rate of population growth (λ) is ", 
-             round( print( popProj()$l ), digits = 3 ), 
-             ".", 
-             sep = "" ) 
+    output$l <- renderText( {
+      paste( "The predicted rate of population growth (λ) is ",
+             round( popProj()$l, digits = 3 ),
+             ".",
+             sep = "" )
     })
     
     output$popPlot <- renderPlot( {
       ggplot( data = popProj()$Ntot, 
               aes( x = Year, 
                    y = Population ) ) + 
-        geom_line() + 
-        theme_classic()
+        geom_line( size = 1.5, 
+                   colour = "mediumseagreen", 
+                   lineend = "round" ) + 
+        theme_classic() + 
+        theme( axis.title = element_text( size = 16 ), 
+               axis.text = element_text( size = 14 ) ) + 
+        scale_x_continuous( name = "Year" ) + 
+        scale_y_continuous( name = "Population size", 
+                            limits = c( 0, 1.2 * max( popProj()$Ntot$Population ) ) )
     })
+    
+    output$hPlot <- renderPlot( { 
+      ggplot( data = popProj()$Htot, 
+              aes( x = Year, 
+                   y = Harvest ) ) + 
+        geom_line( size = 1.5, 
+                   colour = "tomato2", 
+                   lineend = "round" ) + 
+        theme_classic() + 
+        theme( axis.title = element_text( size = 16 ), 
+               axis.text = element_text( size = 14 ) ) + 
+        scale_x_continuous( name = "Year" ) + 
+        scale_y_continuous( name = "Number of fledglings harvested", 
+                            limits = c( 0, 1.2 * max( popProj()$Htot$Harvest ) ) )
+        
+      })
     
   }
 )

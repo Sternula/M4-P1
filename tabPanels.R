@@ -14,7 +14,7 @@ tP1 <- fluidPage( # start "Model" fluidpage
       sliderInput( inputId = "h", 
                    label = "Indicate the proportion of nestling harvest:", 
                    min = 0, 
-                   max = 5, 
+                   max = 20, 
                    value = 5, 
                    step = 0.01, 
                    sep = "", 
@@ -26,19 +26,19 @@ tP1 <- fluidPage( # start "Model" fluidpage
                    value = 2002, 
                    step = 1, 
                    sep = "" ), 
-      fluidRow( 
-        column( width = 3, 
+      fluidRow(
+        column( width = 7,
                 numericInput( inputId = "n0", 
                               label = "Enter the number of falcon pairs in 1980:", 
                               value = 20, 
                               min = 1, 
                               max = 50, 
-                              step = 1, 
-                              width = "100%" ) ) )
+                              step = 1 ) ) )
     ),
     mainPanel( 
       h4( textOutput( outputId = "l" ) ), 
-      plotOutput( outputId = "popPlot" )
+      plotOutput( outputId = "popPlot" ), 
+      plotOutput( outputId = "hPlot" )
     )
   )
 ) # end "Model" fluidpage
